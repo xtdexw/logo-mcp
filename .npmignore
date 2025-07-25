@@ -1,0 +1,42 @@
+# 源代码
+src/
+*.ts
+tsconfig.json
+
+# 测试和开发文件
+test-*.js
+verify-*.js
+cli.js
+start.js
+logos/
+*.test.js
+*.spec.js
+
+# 开发配置
+.codebuddy/
+.cursor/
+.vscode/
+.idea/
+
+# Git和版本控制
+.git/
+.gitignore
+
+# 依赖和构建
+node_modules/
+*.log
+npm-debug.log*
+
+# 临时文件
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# 文档草稿
+*.draft.md
+验证指南.md
+MCP发布指南.md
+DEPLOYMENT.md
+usage-example.md
+example.json

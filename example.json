@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "logo-mcp": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": ".",
+      "env": {}
+    }
+  }
+}

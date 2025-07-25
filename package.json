@@ -1,0 +1,73 @@
+{
+  "name": "logo-mcp",
+  "version": "1.0.0",
+  "description": "基于AI MCP协议的网站Logo自动提取系统",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "logo-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "package.json",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "jest",
+    "cli": "node cli.js",
+    "test-extraction": "node dist/test.js",
+    "verify": "node verify-mcp.js",
+    "test-mcp": "node test-mcp-tools.js",
+    "integration-test": "node integration-test.js",
+    "deploy": "node deploy.js",
+    "deploy:patch": "node deploy.js patch",
+    "deploy:minor": "node deploy.js minor",
+    "deploy:major": "node deploy.js major",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "logo",
+    "extraction",
+    "ai",
+    "model-context-protocol",
+    "favicon",
+    "brand",
+    "website",
+    "scraping"
+  ],
+  "author": "CodeBuddy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xtdexw/logo-mcp.git"
+  },
+  "homepage": "https://github.com/xtdexw/logo-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/xtdexw/logo-mcp/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.6.0",
+    "sharp": "^0.33.0",
+    "url-parse": "^1.5.10",
+    "mime-types": "^2.1.35"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/url-parse": "^1.4.11",
+    "@types/mime-types": "^2.1.4",
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "name": "logo-mcp",
+  "version": "1.0.0",
+  "description": "基于AI MCP协议的网站Logo自动提取系统",
+  "author": "CodeBuddy",
+  "license": "MIT",
+  "homepage": "https://github.com/your-username/logo-mcp",
+  "repository": "https://github.com/your-username/logo-mcp.git",
+  "installation": {
+    "npm": "npx logo-mcp",
+    "local": "node dist/index.js"
+  },
+  "configuration": {
+    "command": "npx",
+    "args": ["logo-mcp"],
+    "env": {},
+    "cwd": null
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false
+  },
+  "tools": [
+    {
+      "name": "extract_logo",
+      "description": "从指定网站URL提取Logo图标，支持多种格式和智能优化",
+      "parameters": {
+        "url": {
+          "type": "string",
+          "required": true,
+          "description": "要提取Logo的网站URL"
+        },
+        "optimize": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "是否对Logo进行AI优化处理"
+        },
+        "format": {
+          "type": "string",
+          "required": false,
+          "default": "both",
+          "enum": ["png", "svg", "both"],
+          "description": "输出格式选择"
+        },
+        "size": {
+          "type": "number",
+          "required": false,
+          "default": 256,
+          "description": "输出图片尺寸（像素）"
+        }
+      },
+      "examples": [
+        {
+          "description": "提取Google Logo",
+          "arguments": {
+            "url": "https://www.google.com",
+            "format": "both",
+            "size": 256
+          }
+        },
+        {
+          "description": "提取Apple Logo为PNG格式",
+          "arguments": {
+            "url": "https://www.apple.com",
+            "format": "png",
+            "size": 512
+          }
+        }
+      ]
+    },
+    {
+      "name": "analyze_logo_candidates",
+      "description": "分析网站的所有Logo候选项并返回详细评分信息",
+      "parameters": {
+        "url": {
+          "type": "string",
+          "required": true,
+          "description": "要分析的网站URL"
+        }
+      },
+      "examples": [
+        {
+          "description": "分析GitHub的Logo候选项",
+          "arguments": {
+            "url": "https://github.com"
+          }
+        }
+      ]
+    }
+  ],
+  "categories": ["图像处理", "网站分析", "品牌识别"],
+  "tags": ["logo", "favicon", "brand", "extraction", "optimization"],
+  "requirements": {
+    "node": ">=18.0.0",
+    "dependencies": ["sharp", "cheerio", "axios"]
+  }
+}
