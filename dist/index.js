@@ -174,7 +174,7 @@ class LogoMCPServer {
             content: [
                 {
                     type: 'text',
-                    text: `成功提取并保存Logo！\n网站: ${url}\nLogo来源: ${bestLogo.source}\n保存位置: ${outputDir}\n文件数量: ${result.savedFiles.length}\n原始尺寸: ${logoData.originalSize?.width || '未知'}x${logoData.originalSize?.height || '未知'}`,
+                    text: `成功提取并保存Logo！\n网站: ${url}\nLogo来源: ${bestLogo.source}\n保存位置: ${outputDir}\n文件数量: ${result.savedFiles.length}`,
                 },
                 {
                     type: 'text',
