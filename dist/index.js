@@ -23,7 +23,7 @@ class LogoMCPServer {
                 tools: [
                     {
                         name: 'extract_logo',
-                        description: '从指定网站URL提取Logo图标',
+                        description: '从指定网站URL提取Logo图标并保存到本地文件',
                         inputSchema: {
                             type: 'object',
                             properties: {
@@ -46,6 +46,11 @@ class LogoMCPServer {
                                     type: 'number',
                                     description: '输出图片尺寸（像素）',
                                     default: 256,
+                                },
+                                outputDir: {
+                                    type: 'string',
+                                    description: '输出目录路径',
+                                    default: './logo',
                                 },
                             },
                             required: ['url'],
@@ -93,7 +98,7 @@ class LogoMCPServer {
         });
     }
     async handleExtractLogo(args) {
-        const { url, optimize = true, format = 'both', size = 256 } = args;
+        const { url, optimize = true, format = 'both', size = 256, outputDir = './logo' } = args;
         if (!url || typeof url !== 'string') {
             throw new Error('请提供有效的网站URL');
         }
@@ -113,6 +118,15 @@ class LogoMCPServer {
         const bestLogo = this.logoExtractor.selectBestLogo(candidates);
         // 下载并处理Logo
         const logoData = await this.logoExtractor.downloadLogo(bestLogo);
+        // 创建输出目录
+        const fs = await import('fs');
+        const path = await import('path');
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+        // 生成文件名（基于域名）
+        const domain = new URL(url).hostname.replace(/^www\./, '');
+        const timestamp = Date.now();
         let result = {
             url: url,
             logoUrl: bestLogo.url,
@@ -120,15 +134,20 @@ class LogoMCPServer {
             source: bestLogo.source,
             originalSize: logoData.originalSize,
             originalFormat: logoData.format,
-            files: [],
+            savedFiles: [],
         };
-        // 根据格式要求处理图片
+        // 根据格式要求处理并保存图片
         if (format === 'png' || format === 'both') {
             const pngData = await this.logoOptimizer.convertToPNG(logoData.buffer, size);
-            result.files.push({
+            const pngFileName = `${domain}-logo-${size}px-${timestamp}.png`;
+            const pngFilePath = path.join(outputDir, pngFileName);
+            fs.writeFileSync(pngFilePath, pngData);
+            result.savedFiles.push({
                 format: 'png',
                 size: size,
-                data: pngData.toString('base64'),
+                fileName: pngFileName,
+                filePath: path.resolve(pngFilePath),
+                fileSize: pngData.length,
                 optimized: optimize,
             });
         }
@@ -138,9 +157,14 @@ class LogoMCPServer {
                 if (optimize) {
                     svgData = await this.logoOptimizer.optimizeSVG(logoData.buffer);
                 }
-                result.files.push({
+                const svgFileName = `${domain}-logo-${timestamp}.svg`;
+                const svgFilePath = path.join(outputDir, svgFileName);
+                fs.writeFileSync(svgFilePath, svgData);
+                result.savedFiles.push({
                     format: 'svg',
-                    data: svgData.toString('utf-8'),
+                    fileName: svgFileName,
+                    filePath: path.resolve(svgFilePath),
+                    fileSize: svgData.length,
                     optimized: optimize,
                 });
             }
@@ -149,7 +173,7 @@ class LogoMCPServer {
             content: [
                 {
                     type: 'text',
-                    text: `成功提取Logo！\n网站: ${url}\nLogo来源: ${bestLogo.source}\n格式: ${result.files.map(f => f.format).join(', ')}\n原始尺寸: ${logoData.originalSize?.width || '未知'}x${logoData.originalSize?.height || '未知'}`,
+                    text: `成功提取并保存Logo！\n网站: ${url}\nLogo来源: ${bestLogo.source}\n保存位置: ${outputDir}\n文件数量: ${result.savedFiles.length}\n原始尺寸: ${logoData.originalSize?.width || '未知'}x${logoData.originalSize?.height || '未知'}`,
                 },
                 {
                     type: 'text',

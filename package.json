@@ -1,6 +1,6 @@
 {
   "name": "@pickstar-2025/logo-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "基于AI MCP协议的网站Logo自动提取系统",
   "main": "dist/index.js",
   "type": "module",
