@@ -116,11 +116,10 @@ class LogoMCPServer {
         }
         // 选择最佳Logo
         const bestLogo = this.logoExtractor.selectBestLogo(candidates);
-        // 下载并处理Logo
-        const logoData = await this.logoExtractor.downloadLogo(bestLogo);
         // 创建输出目录
         const fs = await import('fs');
         const path = await import('path');
+        const axios = await import('axios');
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, { recursive: true });
         }
@@ -132,42 +131,44 @@ class LogoMCPServer {
             logoUrl: bestLogo.url,
             type: bestLogo.type,
             source: bestLogo.source,
-            originalSize: logoData.originalSize,
-            originalFormat: logoData.format,
             savedFiles: [],
         };
-        // 根据格式要求处理并保存图片
-        if (format === 'png' || format === 'both') {
-            const pngData = await this.logoOptimizer.convertToPNG(logoData.buffer, size);
-            const pngFileName = `${domain}-logo-${size}px-${timestamp}.png`;
-            const pngFilePath = path.join(outputDir, pngFileName);
-            fs.writeFileSync(pngFilePath, pngData);
+        try {
+            // 直接从logoUrl下载文件
+            const response = await axios.default.get(bestLogo.url, {
+                responseType: 'arraybuffer',
+                timeout: 10000,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+            const buffer = Buffer.from(response.data);
+            // 检测文件格式
+            const contentType = response.headers['content-type'] || '';
+            let fileExtension = 'png'; // 默认
+            if (contentType.includes('svg')) {
+                fileExtension = 'svg';
+            }
+            else if (contentType.includes('jpeg') || contentType.includes('jpg')) {
+                fileExtension = 'jpg';
+            }
+            else if (contentType.includes('png')) {
+                fileExtension = 'png';
+            }
+            // 保存原始文件
+            const fileName = `${domain}-logo-${timestamp}.${fileExtension}`;
+            const filePath = path.join(outputDir, fileName);
+            fs.writeFileSync(filePath, buffer);
             result.savedFiles.push({
-                format: 'png',
-                size: size,
-                fileName: pngFileName,
-                filePath: path.resolve(pngFilePath),
-                fileSize: pngData.length,
-                optimized: optimize,
+                format: fileExtension,
+                fileName: fileName,
+                filePath: path.resolve(filePath),
+                fileSize: buffer.length,
+                optimized: false,
             });
         }
-        if (format === 'svg' || format === 'both') {
-            if (logoData.format === 'svg') {
-                let svgData = logoData.buffer;
-                if (optimize) {
-                    svgData = await this.logoOptimizer.optimizeSVG(logoData.buffer);
-                }
-                const svgFileName = `${domain}-logo-${timestamp}.svg`;
-                const svgFilePath = path.join(outputDir, svgFileName);
-                fs.writeFileSync(svgFilePath, svgData);
-                result.savedFiles.push({
-                    format: 'svg',
-                    fileName: svgFileName,
-                    filePath: path.resolve(svgFilePath),
-                    fileSize: svgData.length,
-                    optimized: optimize,
-                });
-            }
+        catch (downloadError) {
+            throw new Error(`下载Logo失败: ${downloadError instanceof Error ? downloadError.message : '未知错误'}`);
         }
         return {
             content: [
