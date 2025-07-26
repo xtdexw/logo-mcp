@@ -2,6 +2,10 @@
 
 一个智能的网站Logo提取系统，基于Model Context Protocol (MCP) 构建，能够自动识别并提取网站的Logo图标。
 
+<a href="https://glama.ai/mcp/servers/@xtdexw/logo-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@xtdexw/logo-mcp/badge" alt="Logo MCP server" />
+</a>
+
 ## 功能特性
 
 - 🔍 **智能识别**: 支持多种Logo获取方式
