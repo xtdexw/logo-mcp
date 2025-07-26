@@ -31,29 +31,13 @@ class LogoMCPServer {
         tools: [
           {
             name: 'extract_logo',
-            description: '从指定网站URL提取Logo图标',
+            description: '从指定网站URL提取Logo图标链接',
             inputSchema: {
               type: 'object',
               properties: {
                 url: {
                   type: 'string',
                   description: '要提取Logo的网站URL',
-                },
-                optimize: {
-                  type: 'boolean',
-                  description: '是否对Logo进行AI优化处理',
-                  default: true,
-                },
-                format: {
-                  type: 'string',
-                  enum: ['png', 'svg', 'both'],
-                  description: '输出格式选择',
-                  default: 'both',
-                },
-                size: {
-                  type: 'number',
-                  description: '输出图片尺寸（像素）',
-                  default: 256,
                 },
               },
               required: ['url'],
@@ -103,7 +87,7 @@ class LogoMCPServer {
   }
 
   private async handleExtractLogo(args: any) {
-    const { url, optimize = true, format = 'both', size = 256, outputDir = './logo' } = args;
+    const { url } = args;
 
     if (!url || typeof url !== 'string') {
       throw new Error('请提供有效的网站URL');
@@ -111,13 +95,13 @@ class LogoMCPServer {
 
     // 提取Logo候选项
     const candidates = await this.logoExtractor.extractLogoCandidates(url);
-    
+
     if (candidates.length === 0) {
       return {
         content: [
           {
             type: 'text',
-            text: `未能从网站 ${url} 找到任何Logo图标。请检查网站是否可访问或是否包含Logo。`,
+            text: `未能从网站 ${url} 找到任何Logo图标。`,
           },
         ],
       };
@@ -125,32 +109,22 @@ class LogoMCPServer {
 
     // 选择最佳Logo
     const bestLogo = this.logoExtractor.selectBestLogo(candidates);
-    
-    // 直接返回Logo链接信息，不下载到本地
-    const result = {
-      success: true,
-      message: 'Logo提取成功',
-      data: {
-        websiteUrl: url,
-        logoUrl: bestLogo.url,
-        logoType: bestLogo.type,
-        logoSource: bestLogo.source,
-        logoScore: bestLogo.score,
-        logoAttributes: bestLogo.attributes,
-        allCandidates: candidates.map(c => ({
-          url: c.url,
-          type: c.type,
-          source: c.source,
-          score: c.score
-        }))
-      }
+
+    // 直接返回Logo链接信息
+    const responseData = {
+      message: 'Logo提取成功，已返回可直接下载的Logo链接。',
+      websiteUrl: url,
+      logoUrl: bestLogo.url,
+      logoType: bestLogo.type,
+      logoSource: bestLogo.source,
+      logoScore: bestLogo.score,
     };
 
     return {
       content: [
         {
           type: 'text',
-          text: `Logo提取成功！\n网站: ${url}\nLogo链接: ${bestLogo.url}\nLogo来源: ${bestLogo.source}\n评分: ${bestLogo.score}\n类型: ${bestLogo.type}`,
+          text: JSON.stringify(responseData, null, 2),
         },
       ],
     };
