@@ -31,7 +31,7 @@ class LogoMCPServer {
         tools: [
           {
             name: 'extract_logo',
-            description: '从指定网站URL提取Logo图标并保存到本地文件',
+            description: '从指定网站URL提取Logo图标',
             inputSchema: {
               type: 'object',
               properties: {
@@ -54,11 +54,6 @@ class LogoMCPServer {
                   type: 'number',
                   description: '输出图片尺寸（像素）',
                   default: 256,
-                },
-                outputDir: {
-                  type: 'string',
-                  description: '输出目录路径',
-                  default: './logo',
                 },
               },
               required: ['url'],
@@ -131,77 +126,31 @@ class LogoMCPServer {
     // 选择最佳Logo
     const bestLogo = this.logoExtractor.selectBestLogo(candidates);
     
-    // 创建输出目录
-    const fs = await import('fs');
-    const path = await import('path');
-    const axios = await import('axios');
-    
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
-
-    // 生成文件名（基于域名）
-    const domain = new URL(url).hostname.replace(/^www\./, '');
-    const timestamp = Date.now();
-    
-    let result = {
-      url: url,
-      logoUrl: bestLogo.url,
-      type: bestLogo.type,
-      source: bestLogo.source,
-      savedFiles: [] as any[],
-    };
-
-    try {
-      // 直接从logoUrl下载文件
-      const response = await axios.default.get(bestLogo.url, { 
-        responseType: 'arraybuffer',
-        timeout: 10000,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      });
-      
-      const buffer = Buffer.from(response.data);
-      
-      // 检测文件格式
-      const contentType = response.headers['content-type'] || '';
-      let fileExtension = 'png'; // 默认
-      if (contentType.includes('svg')) {
-        fileExtension = 'svg';
-      } else if (contentType.includes('jpeg') || contentType.includes('jpg')) {
-        fileExtension = 'jpg';
-      } else if (contentType.includes('png')) {
-        fileExtension = 'png';
+    // 直接返回Logo链接信息，不下载到本地
+    const result = {
+      success: true,
+      message: 'Logo提取成功',
+      data: {
+        websiteUrl: url,
+        logoUrl: bestLogo.url,
+        logoType: bestLogo.type,
+        logoSource: bestLogo.source,
+        logoScore: bestLogo.score,
+        logoAttributes: bestLogo.attributes,
+        allCandidates: candidates.map(c => ({
+          url: c.url,
+          type: c.type,
+          source: c.source,
+          score: c.score
+        }))
       }
-      
-      // 保存原始文件
-      const fileName = `${domain}-logo-${timestamp}.${fileExtension}`;
-      const filePath = path.join(outputDir, fileName);
-      
-      fs.writeFileSync(filePath, buffer);
-      
-      result.savedFiles.push({
-        format: fileExtension,
-        fileName: fileName,
-        filePath: path.resolve(filePath),
-        fileSize: buffer.length,
-        optimized: false,
-      });
-      
-    } catch (downloadError) {
-      throw new Error(`下载Logo失败: ${downloadError instanceof Error ? downloadError.message : '未知错误'}`);
-    }
+    };
 
     return {
       content: [
         {
           type: 'text',
-          text: `成功提取并保存Logo！\n网站: ${url}\nLogo来源: ${bestLogo.source}\n保存位置: ${outputDir}\n文件数量: ${result.savedFiles.length}`,
-        },
-        {
-          type: 'text',
-          text: JSON.stringify(result, null, 2),
+          text: `Logo提取成功！\n网站: ${url}\nLogo链接: ${bestLogo.url}\nLogo来源: ${bestLogo.source}\n评分: ${bestLogo.score}\n类型: ${bestLogo.type}`,
         },
       ],
     };
