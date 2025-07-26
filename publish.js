@@ -1,6 +1,6 @@
-import { execSync } from 'child_process';
+const { execSync } = require('child_process');
 
-console.log('🚀 Logo MCP 快速发布脚本\n');
+console.log('🚀 Logo MCP 发布脚本\n');
 
 // 检查NPM登录状态
 function checkNpmLogin() {
@@ -9,16 +9,16 @@ function checkNpmLogin() {
     console.log(`✅ NPM已登录，用户: ${username}`);
     return username;
   } catch (error) {
-    console.log('❌ 请先登录NPM:');
-    console.log('   1. 如果没有账户，请访问: https://www.npmjs.com/signup');
-    console.log('   2. 注册完成后运行: npm login');
-    console.log('   3. 然后重新运行此脚本');
+    console.log('❌ 请先完成NPM登录');
+    console.log('1. 在浏览器中打开: https://www.npmjs.com/login?next=/login/cli/6696923b-9fac-455c-bcde-00be777d7206');
+    console.log('2. 使用您的账户登录');
+    console.log('3. 登录完成后重新运行此脚本');
     return null;
   }
 }
 
 // 检查包名是否可用
-async function checkPackageAvailability(packageName) {
+function checkPackageAvailability(packageName) {
   try {
     execSync(`npm view ${packageName}`, { stdio: 'pipe' });
     console.log(`⚠️  包名 ${packageName} 已被使用`);
@@ -59,14 +59,14 @@ function publishToNpm() {
 }
 
 // 主发布流程
-async function quickPublish() {
-  console.log('📋 开始快速发布流程...\n');
+function publish() {
+  console.log('📋 开始发布流程...\n');
 
   // 确保使用官方NPM源
   try {
-    console.log('🔧 设置NPM源为官方源...');
+    console.log('🔧 确认NPM源...');
     execSync('npm config set registry https://registry.npmjs.org/', { stdio: 'inherit' });
-    console.log('✅ NPM源设置成功');
+    console.log('✅ NPM源设置完成');
   } catch (error) {
     console.log('⚠️  NPM源设置警告，继续执行...');
   }
@@ -74,72 +74,10 @@ async function quickPublish() {
   // 检查NPM登录
   const username = checkNpmLogin();
   if (!username) return;
-#!/usr/bin/env node
-
-console.log('🚀 Logo MCP 快速发布脚本\n');
-
-import { execSync } from 'child_process';
-
-// 检查NPM登录状态
-function checkNpmLogin() {
-  try {
-    const username = execSync('npm whoami', { encoding: 'utf-8' }).trim();
-    console.log(`✅ NPM已登录，用户: ${username}`);
-    return username;
-  } catch (error) {
-    console.log('❌ 请先登录NPM:');
-    console.log('   1. 如果没有账户，请访问: https://www.npmjs.com/signup');
-    console.log('   2. 注册完成后运行: npm login');
-    console.log('   3. 然后重新运行此脚本');
-    return null;
-  }
-}
-
-// 检查包名是否可用
-async function checkPackageAvailability(packageName) {
-  try {
-    execSync(`npm view ${packageName}`, { stdio: 'pipe' });
-    console.log(`⚠️  包名 ${packageName} 已被使用`);
-    return false;
-  } catch (error) {
-    console.log(`✅ 包名 ${packageName} 可用`);
-    return true;
-  }
-}
-
-// 构建项目
-function buildProject() {
-  try {
-    console.log('🔨 构建项目...');
-    execSync('npm run build', { stdio: 'inherit' });
-    console.log('✅ 构建成功');
-    return true;
-  } catch (error) {
-    console.log('❌ 构建失败');
-    return false;
-  }
-}
-
-// 发布到NPM
-function publishToNpm() {
-  try {
-    console.log('📦 发布到NPM...');
-    execSync('npm publish --access public', { stdio: 'inherit' });
-    console.log('✅ 发布成功！');
-    return true;
-  } catch (error) {
-    console.log('❌ 发布失败，可能的原因：');
-    console.log('   - 包名已被使用');
-    console.log('   - 版本号重复');
-    console.log('   - 网络问题');
-    return false;
-  }
-}
-
 
   // 检查包名可用性
   const packageName = 'logo-mcp';
-  const isAvailable = await checkPackageAvailability(packageName);
+  const isAvailable = checkPackageAvailability(packageName);
   
   if (!isAvailable) {
     console.log('\n💡 建议的替代包名：');
@@ -171,4 +109,4 @@ function publishToNpm() {
   }
 }
 
-quickPublish().catch(console.error);
+publish();
